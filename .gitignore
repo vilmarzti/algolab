@@ -4,3 +4,8 @@ test
 testset
 Makefile
 helpers.mk
+bin
+build
+CMakeLists.txt
+.algolab
+algolab.sh
