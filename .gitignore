@@ -9,3 +9,5 @@ build
 CMakeLists.txt
 .algolab
 algolab.sh
+nimcache
+algorithm
