@@ -1,76 +1,56 @@
 #include <iostream>
 #include <vector>
-#include <cmath>
+#include <algorithm>
+#include <numeric>
+#include <limits>
+#include <stdexcept>
 
-void testcase(int y){
-    long n;
-    long k; 
-    std::cin >> n >> k;
+using namespace std;
 
-    int v;
-    std::vector<long> vec;
-    for(int m=0; m<n; m++){
-        std::cin >> v;
-        vec.push_back(v);
+void testcase(){
+    int num, goal;
+    std::cin >> num >> goal;
+
+    // Read the vector
+    std::vector<int> vec;
+    for(int n=0; n<num; n++){
+        int x;
+        std::cin >> x;
+        vec.push_back(x);
     }
 
-    std::vector<long> sum;
-    for(int x=0; x<n; x++){
-        if(x == 0){
-            sum.push_back(vec.at(0));
-        }else{
-            sum.push_back(sum.at(x-1) + vec.at(x));
+    // implement sliding window
+    int i=0, j=1, sum=vec.at(0);
+    int best_i=0, best_j=0, best_sum=INT32_MAX;
+    while((i<j) && (j <= num)){
+        if (abs(sum - goal) < abs(best_sum - goal)){
+            best_sum = sum;
+            best_i = i;
+            best_j = j;
         }
-    }
 
-    bool found = false;
-    long sol_i, sol_j, val_i, val_j;
-    long partialSum;
-    long val = -1;
-    for(long i=0; i<n; i++){
-        for(long j=i; j<n; j++){
-            if(i == 0){
-                partialSum = sum.at(j);
-            }
-            else{
-                partialSum = sum.at(j) - sum.at(i - 1);
-            }
-            if(val == -1 || std::abs(val-k) > std::abs(partialSum - k)){
-                val = partialSum;
-                val_i = i;
-                val_j = j;
-            }
-
-
-            if(partialSum > k){
-                break;
-            }
-
-            if(partialSum == k){
-                found = true;
-                sol_i = i  ;
-                sol_j = j;
-                break;
-            }
-
+        if(sum == goal){
+            std::cout << i << " " << j - 1 << std::endl;
+            return;
+        } else if(sum < goal){
+            sum += vec.at(j);
+            j++;
+        } else if (sum > goal){
+            sum -= vec.at(i);
+            i++;
         }
-        if(found){
-            break;
-        }
+
     }
 
-    if (found){
-        std::cout << sol_i << " " << sol_j << std::endl;
-    }else{
-        std::cout << val_i << " " << val_j << std::endl;
-    }
+    std::cout  << best_i << " " << best_j << std::endl;
 }
 
-int main(){
-    std::ios_base::sync_with_stdio(false);
+int main(int argc, char const *argv[]) {
+    ios_base::sync_with_stdio(false);
     int t;
     std::cin >> t;
-    for(int n=0; n<t; n++){
-        testcase(n);
+    for(int n=0; n<t;n++){
+        testcase();
+
     }
 }
