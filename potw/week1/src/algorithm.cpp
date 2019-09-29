@@ -22,13 +22,11 @@ void testcase(){
     // implement sliding window
     int i=0, j=1, sum=vec.at(0);
     int best_i=0, best_j=0, best_sum=INT32_MAX;
-    while((i<j) && (j <= num)){
-        if (abs(sum - goal) < abs(best_sum - goal)){
-            best_sum = sum;
-            best_i = i;
-            best_j = j;
-        }
+    volatile int val, best_val;
+    while((i<=j) && (j < num)){
 
+        // check if results is correct or whether we need
+        // to increase the left or right hand side
         if(sum == goal){
             std::cout << i << " " << j - 1 << std::endl;
             return;
@@ -38,6 +36,14 @@ void testcase(){
         } else if (sum > goal){
             sum -= vec.at(i);
             i++;
+        }
+
+        val = abs(sum - goal);
+        best_val = abs(best_sum - goal);
+        if (val < best_val){
+            best_sum = sum;
+            best_i = i;
+            best_j = j - 1;
         }
 
     }
