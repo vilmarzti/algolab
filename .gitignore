@@ -7,5 +7,8 @@ helpers.mk
 bin
 build
 CMakeLists.txt
+.vscode
 .algolab
 algolab.sh
+nimcache
+algorithm
