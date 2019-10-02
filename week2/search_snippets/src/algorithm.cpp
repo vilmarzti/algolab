@@ -12,7 +12,7 @@ void testcase(){
     int n;
     int max_m = 0;
     
-    std::cin >>n;
+    std::cin >> n;
     // read all the ms
     std::vector<int> m_vec;
     for(int x; x<n;x++){
@@ -49,33 +49,34 @@ void testcase(){
         old_ranges.push_back(make_tuple(i, i));
     }
 
-    for(int i=1; i<n; i++){
+    for(int i=0; i<n; i++){
         std::vector<std::tuple<size_t, size_t>> new_ranges;
         std::vector<size_t> current_idx = p_matrix.at(i);
 
         size_t tup_index = 0;
-        for(size_t p_index=0; p_index < current_idx.size(); p_index++){
-            size_t p = current_idx.at(p_index);
-            size_t p_plus = (p_index < current_idx.size() - 1) ? current_idx.at(p_index + 1) : INT32_MAX;
+        size_t p_index = 0;
+        bool first_time = true;
 
-            while(std::get<0>(old_ranges.at(tup_index)) < p && tup_index < old_ranges.size() ){
+        while(p_index < current_idx.size()){
+            size_t p = current_idx.at(p_index);
+            size_t first = std::get<0>(old_ranges.at(tup_index));
+            size_t second = std::get<1>(old_ranges.at(tup_index));
+
+            if(p <= first){
+                p_index++;
+            } else if (first_time){
+                volatile size_t before = current_idx.at(p_index - 1 );
+                new_ranges.push_back(make_tuple(before, first));
+                first_time = false;
+            } else if (p > first){
+                new_ranges.push_back(make_tuple(second, p));
                 tup_index++;
             }
 
-            size_t lower = std::get<0>(old_ranges.at(tup_index - 1));
-            size_t upper = std::get<1>(old_ranges.at(tup_index));
-
-            if(p_plus < upper){
-                continue;
-            } else {
-                new_ranges.push_back(make_tuple(lower, p));
-                new_ranges.push_back(make_tuple(p, upper));
-            }
-            //std::cout << " " <<  p << " (" << std::get<0>(old_ranges.at(tup_index)) <<  ", " << std::get<1>(old_ranges.at(tup_index)) << ")";
         }
-        std::cout << std::endl;
-        old_ranges = new_ranges;
-        for(auto tup: old_ranges){
+       old_ranges = new_ranges;
+
+        for(auto &tup: old_ranges){
             std::cout << "( " << std::get<0>(tup) << ", " << std::get<1>(tup) << ") ";
         }
         std::cout << std::endl;
@@ -83,14 +84,14 @@ void testcase(){
 
 
     int min_range = INT32_MAX;
-    for(std::tuple<int, int> tup: old_ranges){
-        int first = std::get<0>(tup);
-        int second = std::get<1>(tup);
+    for(size_t i; i< old_ranges.size(); i++){
+        int first = std::get<0>(old_ranges.at(i));
+        int second = std::get<1>(old_ranges.at(i));
         int diff = second - first;
         min_range = (diff < min_range) ? diff : min_range;
+ 
     }
-
-    //std::cout << min_range + 1 << std::endl;
+    std::cout << min_range + 1 << std::endl;
 }
 
 int main(int argc, char const *argv[]) {
