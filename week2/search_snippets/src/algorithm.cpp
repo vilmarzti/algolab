@@ -9,13 +9,13 @@
 using namespace std;
 
 void testcase(){
-    int n;
+    size_t n;
     int max_m = 0;
     
     std::cin >> n;
     // read all the ms
     std::vector<int> m_vec;
-    for(int x; x<n;x++){
+    for(size_t x=0; x<n;x++){
         int m;
         
         std::cin >> m;
@@ -40,6 +40,7 @@ void testcase(){
         
         p_matrix.push_back(p_vector);
     }
+
     
     // Algorithm
 
@@ -48,46 +49,75 @@ void testcase(){
     for(size_t &i: p_matrix[0]) {
         old_ranges.push_back(make_tuple(i, i));
     }
-
-    for(int i=0; i<n; i++){
+    /*
+    for(auto &tup: old_ranges){
+        std::cout << "( " << std::get<0>(tup) << ", " << std::get<1>(tup) << ") ";
+    }
+    std::cout << std::endl;
+    */
+    for(size_t i=1; i<n; i++){
         std::vector<std::tuple<size_t, size_t>> new_ranges;
         std::vector<size_t> current_idx = p_matrix.at(i);
 
         size_t tup_index = 0;
         size_t p_index = 0;
-        bool first_time = true;
-
         while(p_index < current_idx.size()){
-            size_t p = current_idx.at(p_index);
-            size_t first = std::get<0>(old_ranges.at(tup_index));
-            size_t second = std::get<1>(old_ranges.at(tup_index));
+            bool is_processed = false;
+            volatile size_t p = current_idx.at(p_index);
 
-            if(p <= first){
-                p_index++;
-            } else if (first_time){
-                volatile size_t before = current_idx.at(p_index - 1 );
-                new_ranges.push_back(make_tuple(before, first));
-                first_time = false;
-            } else if (p > first){
-                new_ranges.push_back(make_tuple(second, p));
-                tup_index++;
+            // the next p
+            volatile size_t p_next = (p_index == current_idx.size() - 1) ? INT32_MAX : current_idx.at(p_index + 1);
+
+            // the p that was before
+            volatile size_t p_before = (p_index == 0) ? 0: current_idx.at(p_index - 1);
+
+            // the lower bound from the tuple before
+            volatile size_t lower = (tup_index == 0) ? 0 : std::get<1>(old_ranges.at(tup_index - 1));
+
+            // the upper bound from the next tuple
+            volatile size_t upper = (tup_index == old_ranges.size()) ? INT32_MAX : std::get<0>(old_ranges.at(tup_index));
+
+
+            if( lower <= p && p <= upper){
+                if(p_before <= lower){
+                    new_ranges.push_back(make_tuple(lower, p));
+                }
+                if(p_next >= upper && tup_index < old_ranges.size()){
+                    new_ranges.push_back(make_tuple(p, upper));
+                }
+                is_processed = true;
             }
 
+            while(p>upper){
+                volatile size_t first = std::get<0>(old_ranges.at(tup_index));
+                volatile size_t second = std::get<1>(old_ranges.at(tup_index));
+                if(first <= p && p <= second){
+                    new_ranges.push_back(make_tuple(first, second));
+                    is_processed = true;
+                    break;
+                }
+                tup_index++;
+                upper = (tup_index >= old_ranges.size() - 1) ? INT32_MAX : std::get<0>(old_ranges.at(tup_index));
+            }
+            if(is_processed){
+                p_index++;
+            }
         }
-       old_ranges = new_ranges;
-
+        old_ranges = new_ranges;
+        /*        
         for(auto &tup: old_ranges){
             std::cout << "( " << std::get<0>(tup) << ", " << std::get<1>(tup) << ") ";
         }
         std::cout << std::endl;
+        */
     }
 
 
-    int min_range = INT32_MAX;
-    for(size_t i; i< old_ranges.size(); i++){
-        int first = std::get<0>(old_ranges.at(i));
-        int second = std::get<1>(old_ranges.at(i));
-        int diff = second - first;
+    size_t min_range = INT32_MAX;
+    for(size_t i=0; i< old_ranges.size(); i++){
+        size_t first = std::get<0>(old_ranges.at(i));
+        size_t second = std::get<1>(old_ranges.at(i));
+        size_t diff = second - first;
         min_range = (diff < min_range) ? diff : min_range;
  
     }
