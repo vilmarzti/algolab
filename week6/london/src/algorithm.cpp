@@ -36,22 +36,29 @@ public:
 template <class T>
 std::vector<std::pair<T, int>> getCount(std::vector<T> input_vector)
 {
-    std::vector<T, int> unique_vector;
-    for (int i = 0; i < input_vector.length(); i++)
+    std::vector<pair<T, int>> unique_vector;
+    for (int i = 0; i < input_vector.size(); i++)
     {
-        T current_element = unique_vector.at(i);
-        // If element is already in the  unique vecotor skip 
-        if (std::find(unique_vector.first(), unique_vector.end(), current_element) == unique_vector.end())
+        T current_element = input_vector.at(i);
+        int count = std::count(input_vector.begin(), input_vector.end(), current_element);
+
+        bool contains = false;
+        for (size_t n = 0; n < unique_vector.size(); n++)
         {
-            int counter = 0;
-            for (int n = i; n < input_vector.length(); n++)
+            if (unique_vector.at(n).first == current_element)
             {
-                counter = input_vector.at(i) == current_element ? counter + 1 : counter;
+                contains = true;
+                break;
             }
-            std::pair<T, int> counter_pair = std::make_pair(current_element, counter);
-            unique_vector.push_back(counter_pair);
+        }
+
+        if (!contains)
+        {
+            pair<T, int> current_pair = make_pair(current_element, count);
+            unique_vector.push_back(make_pair(current_element, count));
         }
     }
+
     return unique_vector;
 }
 
@@ -59,8 +66,8 @@ void testcase()
 {
     size_t h, w;
     string note;
-    std::vector<string> raw_string;
-    std::vector<pair<char, char>> char_pairs;
+    vector<string> raw_string;
+    vector<pair<char, char>> char_pairs;
 
     // read size of h and w
     std::cin >> h >> w;
@@ -84,17 +91,15 @@ void testcase()
         {
             char first_char = raw_string.at(i).at(n);
             char second_char = a.at(w - n - 1);
-            char_pairs.push_back(std::make_pair(first_char, second_char));
+            pair<char, char> char_pair = make_pair(first_char, second_char);
+            char_pairs.push_back(char_pair);
         }
     }
 
     if (h * w < note.length())
     {
         std::cout << "No" << std::endl;
-    }
-    else
-    {
-        std::cout << "Yes" << std::endl;
+        return;
     }
 
     std::vector<char> note_vector(note.begin(), note.end());
@@ -102,10 +107,46 @@ void testcase()
 
     graph G(unique_note.size() + char_pairs.size());
     edge_adder adder(G);
-    for(size_t i=0; i < char_pairs.size(); i++){
-        
+    for (size_t i = 0; i < unique_note.size(); i++)
+    {
+        char note_char = unique_note.at(i).first;
+        for (size_t n = 0; n < char_pairs.size(); n++)
+        {
+            char pair_first = char_pairs.at(i).first;
+            char pair_second = char_pairs.at(i).second;
+            if (note_char == pair_first || note_char == pair_second)
+            {
+                std::cout << note_char << " (" << pair_first << ", " << pair_second << ")" << std::endl;
+                adder.add_edge(i, unique_note.size() + n, 1);
+            }
+        }
     }
 
+    const vertex_desc v_source = boost::add_vertex(G);
+    const vertex_desc v_target = boost::add_vertex(G);
+
+    for (size_t i = 0; i < unique_note.size(); i++)
+    {
+        adder.add_edge(v_source, i, unique_note.at(i).second);
+    }
+
+    for (size_t i = 0; i < char_pairs.size(); i++)
+    {
+        adder.add_edge(unique_note.size() + i, v_target, 1);
+    }
+
+    long flow = boost::push_relabel_max_flow(G, v_source, v_target);
+    //const auto c_map = boost::get(boost::edge_capacity, G);
+    //const auto rc_map = boost::get(boost::edge_residual_capacity, G);
+    //std::cout << flow << std::endl;
+    //std::cout << note_vector.size() << std::endl;
+
+    if (flow == note_vector.size()){
+        std::cout << "Yes" << std::endl;
+    }
+    else{
+        std::cout << "No" << " " << flow << " " << note_vector.size() << std::endl;
+    }
 }
 
 int main(int argc, char const *argv[])
