@@ -4,6 +4,7 @@
 #include <numeric>
 #include <limits>
 #include <stdexcept>
+#include <unordered_set>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/push_relabel_max_flow.hpp>
 
@@ -34,18 +35,19 @@ public:
 };
 
 template <class T>
-std::vector<std::pair<T, int>> getCount(std::vector<T> input_vector)
+vector<pair<T, int>> getCount(std::vector<T> &input_vector)
 {
-    std::vector<pair<T, int>> unique_vector;
+    vector<pair<T, int>> unique_vector;
     for (int i = 0; i < input_vector.size(); i++)
     {
         T current_element = input_vector.at(i);
-        int count = std::count(input_vector.begin(), input_vector.end(), current_element);
 
         bool contains = false;
+        pair<T, int>* unique_element;
         for (size_t n = 0; n < unique_vector.size(); n++)
         {
-            if (unique_vector.at(n).first == current_element)
+            unique_element = &unique_vector.at(n);
+            if (unique_element->first == current_element)
             {
                 contains = true;
                 break;
@@ -54,8 +56,11 @@ std::vector<std::pair<T, int>> getCount(std::vector<T> input_vector)
 
         if (!contains)
         {
-            pair<T, int> current_pair = make_pair(current_element, count);
-            unique_vector.push_back(make_pair(current_element, count));
+            unique_vector.push_back(make_pair(current_element, 1));
+        }
+        else
+        {
+            unique_element->second += 1;
         }
     }
 
@@ -103,21 +108,22 @@ void testcase()
     }
 
     std::vector<char> note_vector(note.begin(), note.end());
-    std::vector<std::pair<char, int>> unique_note = getCount(note_vector);
 
-    graph G(unique_note.size() + char_pairs.size());
+    vector<pair<char, int>> unique_note = getCount(note_vector);
+    vector<pair<pair<char, char>, int>> unique_pair = getCount(char_pairs);
+
+    graph G(unique_note.size() + unique_pair.size());
     edge_adder adder(G);
     for (size_t i = 0; i < unique_note.size(); i++)
     {
         char note_char = unique_note.at(i).first;
-        for (size_t n = 0; n < char_pairs.size(); n++)
+        for (size_t n = 0; n < unique_pair.size(); n++)
         {
-            char pair_first = char_pairs.at(i).first;
-            char pair_second = char_pairs.at(i).second;
+            char pair_first = unique_pair.at(n).first.first;
+            char pair_second = unique_pair.at(n).first.second;
             if (note_char == pair_first || note_char == pair_second)
             {
-                std::cout << note_char << " (" << pair_first << ", " << pair_second << ")" << std::endl;
-                adder.add_edge(i, unique_note.size() + n, 1);
+                adder.add_edge(i, unique_note.size() + n, unique_pair.at(n).second);
             }
         }
     }
@@ -130,22 +136,19 @@ void testcase()
         adder.add_edge(v_source, i, unique_note.at(i).second);
     }
 
-    for (size_t i = 0; i < char_pairs.size(); i++)
+    for (size_t i = 0; i < unique_pair.size(); i++)
     {
-        adder.add_edge(unique_note.size() + i, v_target, 1);
+        adder.add_edge(unique_note.size() + i, v_target, unique_pair.at(i).second);
     }
 
     long flow = boost::push_relabel_max_flow(G, v_source, v_target);
-    //const auto c_map = boost::get(boost::edge_capacity, G);
-    //const auto rc_map = boost::get(boost::edge_residual_capacity, G);
-    //std::cout << flow << std::endl;
-    //std::cout << note_vector.size() << std::endl;
-
-    if (flow == note_vector.size()){
-        std::cout << "Yes" << std::endl;
+    if (flow == note_vector.size())
+    {
+        std::cout << "Yes\n";
     }
-    else{
-        std::cout << "No" << " " << flow << " " << note_vector.size() << std::endl;
+    else
+    {
+        std::cout << "No\n";
     }
 }
 
