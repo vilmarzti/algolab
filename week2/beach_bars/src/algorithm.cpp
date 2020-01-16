@@ -23,39 +23,29 @@ void testcase()
     }
 
     sort(vec.begin(), vec.end());
-    
+
     // sliding window
     int i = 0;
-    int j = 1;
+    int j = 0;
     int val_i, val_j;
     int difference;
     int best_count = 0;
     int longest_distance = 0;
     float middle = 0;
-    std::vector<float> best_pos;
-    while (j < n && i < j)
+    std::vector<int> best_pos;
+    while (j < n)
     {
         val_i = vec.at(i);
         val_j = vec.at(j);
         difference = abs(val_j - val_i);
 
-        if (j - i + 1 == best_count)
-        {
-            middle = (val_j + val_i) / 2.0;
-            if (middle != floor(middle))
-            {
-                best_pos.push_back(floor(middle));
-                best_pos.push_back(ceil(middle));
-            }
-            else
-            {
-                best_pos.push_back(middle);
-            }
-            longest_distance = max(abs(floor(middle) - val_i), abs(val_j - floor(middle)));
-        }
-        else if (j - i + 1 > best_count)
-        {
+        if(j - i + 1 > best_count){
             best_pos = {};
+            best_count = j - i + 1;
+        }
+
+        if (j - i + 1 >= best_count)
+        {
             middle = (val_j + val_i) / 2.0;
             if (middle != floor(middle))
             {
@@ -66,7 +56,6 @@ void testcase()
             {
                 best_pos.push_back(middle);
             }
-            best_count = j - i + 1;
             longest_distance = max(abs(floor(middle) - val_i), abs(val_j - floor(middle)));
         }
 
@@ -85,7 +74,8 @@ void testcase()
     for (int t = 0; t < best_pos.size(); t++)
     {
         std::cout << best_pos.at(t);
-        if(t < best_pos.size() - 1){
+        if (t < best_pos.size() - 1)
+        {
             std::cout << " ";
         }
     }
